@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>神秘礼物 - 爱心卡片</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1E88E5',
+                        love: {
+                            100: '#FFEBEE',
+                            200: '#FFCDD2',
+                            300: '#EF9A9A',
+                            400: '#E57373',
+                            500: '#EF5350',
+                        },
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .modal-shadow {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            }
+            .card-shadow {
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            }
+        }
+    </style>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            background-color: #f0f8ff;
+        }
+        
+        .card {
+            position: absolute;
+            width: 120px;
+            height: 80px;
+            border-radius: 14px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s ease-out;
+            cursor: pointer;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            background: #FFE4E1;
+        }
+        
+        /* 手机端适配 */
+        @media (max-width: 768px) {
+            .card {
+                width: 100px;
+                height: 70px;
+                border-radius: 12px;
+            }
+            
+            .card.central {
+                width: 120px;
+                height: 90px;
+            }
+        }
+        
+        .card.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+        
+        .card:hover {
+            transform: scale(1.05) translateY(-2px);
+            z-index: 20;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .card.central {
+            z-index: 15;
+            width: 140px;
+            height: 100px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+        
+        .card-header {
+            background: #FFB6C1;
+            padding: 6px 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            width: 100%;
+            box-sizing: border-box;
+            border-bottom: 1px solid rgba(255, 182, 193, 0.3);
+        }
+        
+        .card-icon {
+            color: #E91E63;
+            font-size: 12px;
+            position: relative;
+            display: inline-block;
+            width: 14px;
+            height: 12px;
+        }
+        
+        .card-icon i {
+            position: relative;
+            z-index: 2;
+            display: block;
+        }
+        
+        .card-icon::after {
+            content: '';
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            width: 10px;
+            height: 2px;
+            background: #FFD700;
+            z-index: 1;
+            border-radius: 1px;
+        }
+        
+        .card-header-title {
+            color: #2C2C2C;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .card-body {
+            background: #FFE4E1;
+            padding: 10px;
+            height: calc(100% - 32px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .card-message {
+            color: #2C2C2C;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.4;
+        }
+        
+        .card.central .card-message {
+            font-size: 18px;
+            color: #1A1A1A;
+        }
+        
+        /* 手机端字体适配 */
+        @media (max-width: 768px) {
+            .card-header {
+                padding: 5px 8px;
+            }
+            
+            .card-icon {
+                font-size: 10px;
+                width: 12px;
+                height: 10px;
+            }
+            
+            .card-icon::after {
+                width: 8px;
+                height: 1.5px;
+            }
+            
+            .card-header-title {
+                font-size: 10px;
+            }
+            
+            .card-body {
+                padding: 8px;
+                height: calc(100% - 28px);
+            }
+            
+            .card-message {
+                font-size: 12px;
+            }
+            
+            .card.central .card-message {
+                font-size: 14px;
+            }
+        }
+        
+        #heartContainer {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(180deg, #E3F2FD 0%, #BBDEFB 100%);
+        }
+        
+        #celebration {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 50;
+        }
+        
+        .confetti {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            opacity: 0;
+            animation: confetti-fall 3s ease-in-out forwards;
+        }
+        
+        @keyframes confetti-fall {
+            0% {
+                transform: translateY(-10%) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(110vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- 初始模态框 -->
+    <div id="giftModal" class="fixed inset-0 bg-gray-400/90 flex items-center justify-center p-4 z-50">
+        <div class="w-full max-w-xs bg-white rounded-lg overflow-hidden modal-shadow">
+            <!-- 模态框头部 -->
+            <div class="bg-gray-50 px-4 py-3 flex items-center space-x-2 border-b border-gray-200">
+                <div class="w-5 h-5 rounded-full bg-teal-100 flex items-center justify-center">
+                    <i class="fa fa-gift text-teal-500 text-xs"></i>
+                </div>
+                <h2 class="❄">送给王馨元的一份神秘礼物</h2>
+            </div>
+            
+            <!-- 模态框内容 -->
+            <div class="px-4 py-5">
+                <p class="text-gray-600 text-sm leading-relaxed">冬天的第一份礼物，确定要打开吗？</p>
+            </div>
+            
+            <!-- 模态框底部 -->
+            <div class="px-4 py-3 flex justify-end border-t border-gray-200">
+                <button id="openGiftBtn" class="bg-primary text-white text-sm px-4 py-2 rounded hover:bg-primary/90 transition-colors focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2">
+                    确定
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 爱心卡片容器 -->
+    <div id="heartContainer" class="hidden">
+        <!-- 卡片将通过JS动态生成 -->
+    </div>
+
+    <!-- 庆祝效果容器 -->
+    <div id="celebration"></div>
+
+    <!-- 背景音乐 -->
+    <audio id="heartMusic" preload="auto" loop>
+        <source src="46f2a16b18f2704694aba390e84cac4d (1).mp3" type="audio/mpeg">
+    </audio>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const openGiftBtn = document.getElementById('openGiftBtn');
+            const giftModal = document.getElementById('giftModal');
+            const heartContainer = document.getElementById('heartContainer');
+            const celebration = document.getElementById('celebration');
+            
+            // 卡片消息内容
+            const cardMessages = [
+                { title: '提示', text: '记得好好吃饭' },
+                { title: '提示', text: '每天多喝水' },
+                { title: '提示', text: '早点休息' },
+                { title: '提示', text: '别熬夜' },
+                { title: '提示', text: '保持微笑' },
+                { title: '提示', text: '要开心哦' },
+                { title: '提示', text: '加油鸭' },
+                { title: '提示', text: '你最棒了' },
+                { title: '提示', text: '照顾好自己' },
+                { title: '提示', text: '暴富' },
+                { title: '提示', text: '暴瘦50斤' },
+                { title: '提示', text: '保持微笑呀' },
+                { title: '提示', text: '多喝水哦~' },
+                { title: '提示', text: '记得吃水果' },
+                { title: '提示', text: '珍惜每一刻' },
+                { title: '提示', text: '要相信自己奥' },
+                { title: '提示', text: '顺顺利利' },
+                { title: '提示', text: '你超棒的' },
+                { title: '提示', text: '梦想成真' },
+                { title: '提示', text: '每天都要元气满满' },
+                { title: '提示', text: '愿所有烦恼都消失' },
+                { title: '提示', text: '待下一次见面' },
+                { title: '提示', text: '记得吃水果' },
+                { title: '提示', text: '要开心每一天' }
+            ];
+            
+            // 卡片颜色配置（头部颜色和主体颜色）
+            const cardColors = [
+                { header: '#FFB6C1', body: '#FFE4E1' }, // 粉红色
+                { header: '#FFA07A', body: '#FFE4E1' }, // 桃色
+                { header: '#FFB6C1', body: '#FFF0F5' }, // 浅粉红色
+                { header: '#FFA07A', body: '#FFE4E1' }, // 桃色
+                { header: '#FFB6C1', body: '#FFE4E1' }, // 粉红色
+                { header: '#FFA07A', body: '#FFF0F5' }, // 桃色
+                { header: '#FFB6C1', body: '#FFE4E1' }, // 粉红色
+                { header: '#FFA07A', body: '#FFE4E1' }, // 桃色
+                { header: '#FFB6C1', body: '#FFF0F5' }, // 粉红色
+                { header: '#FFA07A', body: '#FFE4E1' }, // 桃色
+            ];
+            
+            // 生成爱心形状的坐标
+            function generateHeartCoordinates(radius = 150, centerX = window.innerWidth / 2, centerY = window.innerHeight / 2, numPoints = 80) {
+                const points = [];
+                let topPoint = null;
+                let minY = Infinity;
+                
+                for (let i = 0; i < numPoints; i++) {
+                    const angle = (i / numPoints) * Math.PI * 2;
+                    
+                    // 心形曲线方程
+                    const t = angle;
+                    const x = 16 * Math.pow(Math.sin(t), 3);
+                    const y = 13 * Math.cos(t) - 5 * Math.cos(2*t) - 2 * Math.cos(3*t) - Math.cos(4*t);
+                    
+                    // 缩放并转换到屏幕坐标系
+                    const screenX = centerX + x * radius / 20;
+                    const screenY = centerY - y * radius / 20; // 负号是因为y轴在屏幕上是向下的
+                    
+                    // 找到心形顶部中心点（y值最小且x接近centerX的点）
+                    if (screenY < minY || (Math.abs(screenY - minY) < 5 && Math.abs(screenX - centerX) < Math.abs((topPoint?.x || centerX) - centerX))) {
+                        minY = screenY;
+                        topPoint = { x: screenX, y: screenY, angle, index: i };
+                    }
+                    
+                    points.push({ x: screenX, y: screenY, angle, index: i });
+                }
+                
+                return { points, topPoint };
+            }
+            
+            // 生成随机的小偏移量，使卡片略有不同
+            function getRandomOffset() {
+                return (Math.random() - 0.5) * 10;
+            }
+            
+            // 创建并显示空心爱心卡片
+            function createHeartCards() {
+                // 播放背景音乐
+                const heartMusic = document.getElementById('heartMusic');
+                if (heartMusic) {
+                    heartMusic.volume = 0.5; // 设置音量为50%
+                    heartMusic.play().catch(error => {
+                        console.log('音频播放失败:', error);
+                        // 如果自动播放失败（浏览器限制），可以提示用户点击后播放
+                    });
+                }
+                
+                // 生成更多点，以便能够创建空心效果
+                const centerX = window.innerWidth / 2;
+                const centerY = window.innerHeight / 2;
+                
+                // 根据屏幕大小调整心形尺寸（增大心形尺寸）
+                const isMobile = window.innerWidth <= 768;
+                const heartRadius = isMobile ? 250 : 400;
+                const numPoints = isMobile ? 220 : 300;
+                
+                const result = generateHeartCoordinates(heartRadius, centerX, centerY, numPoints);
+                const coordinates = result.points;
+                const topPoint = result.topPoint;
+                const container = heartContainer;
+                
+                // 清空容器
+                container.innerHTML = '';
+                
+                // 计算中心区域半径（用于创建空心效果）
+                const centerRadius = isMobile ? 80 : 120; // 增大中心区域以适应更大的心形
+                
+                // 过滤坐标，创建空心效果：边缘密集，中心稀疏
+                const filteredCoordinates = coordinates.filter((point, index) => {
+                    // 计算点到心形中心的距离
+                    const distanceFromCenter = Math.sqrt(
+                        Math.pow(point.x - centerX, 2) + 
+                        Math.pow(point.y - centerY, 2)
+                    );
+                    
+                    // 如果距离中心太近，跳过更多点（创建空心效果）
+                    if (distanceFromCenter < centerRadius) {
+                        // 中心区域：每隔3-4个点才放一张卡片
+                        return index % 4 === 0;
+                    } else if (distanceFromCenter < centerRadius * 1.5) {
+                        // 中间区域：每隔2个点放一张卡片
+                        return index % 2 === 0;
+                    } else {
+                        // 边缘区域：每个点都放卡片（密集）
+                        return true;
+                    }
+                });
+                
+                // 找到最接近顶部中心点的索引
+                let centerCardIndex = 0;
+                let minDistance = Infinity;
+                filteredCoordinates.forEach((point, index) => {
+                    const distance = Math.sqrt(Math.pow(point.x - topPoint.x, 2) + Math.pow(point.y - topPoint.y, 2));
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        centerCardIndex = index;
+                    }
+                });
+                
+                // 创建卡片
+                filteredCoordinates.forEach((point, index) => {
+                    const card = document.createElement('div');
+                    // 判断是否是中央卡片（顶部中心位置）
+                    const isCentral = index === centerCardIndex;
+                    
+                    // 使用不同的消息内容，中央卡片使用第一条消息"记得好好吃饭"
+                    const message = isCentral ? cardMessages[0] : cardMessages[(index % (cardMessages.length - 1)) + 1];
+                    
+                    // 为不同卡片设置随机旋转角度，范围调整为更自然
+                    const rotateAngle = isCentral ? 0 : (Math.random() - 0.5) * 8;
+                    
+                    // 设置卡片样式
+                    card.className = `card card-shadow transform${isCentral ? ' central' : ''}`;
+                    
+                    // 中央卡片位置稍微前移，使其更突出
+                    const offsetX = isCentral ? 0 : getRandomOffset();
+                    const offsetY = isCentral ? -10 : getRandomOffset();
+                    
+                    card.style.left = `${point.x + offsetX}px`;
+                    card.style.top = `${point.y + offsetY}px`;
+                    card.style.transform = `translate(-50%, -50%) scale(0) rotate(${rotateAngle}deg)`;
+                    card.style.opacity = '0';
+                    // 保存旋转角度到 data 属性，方便后续使用
+                    card.setAttribute('data-rotate', rotateAngle);
+                    
+                    // 设置卡片颜色
+                    const cardColor = cardColors[index % cardColors.length];
+                    card.style.background = cardColor.body;
+                    
+                    // 中央卡片使用更突出的颜色
+                    if (isCentral) {
+                        card.style.background = '#FFE4E1';
+                    }
+                    
+                    // 设置卡片内容
+                    const headerBg = isCentral ? '#FF8C94' : cardColor.header;
+                    card.innerHTML = `
+                        <div class="card-header" style="background: ${headerBg};">
+                            <span class="card-icon">
+                                <i class="fa fa-heart"></i>
+                            </span>
+                            <span class="card-header-title">${message.title}</span>
+                        </div>
+                        <div class="card-body" style="background: ${isCentral ? '#FFE4E1' : cardColor.body};">
+                            <div class="card-message">${message.text}</div>
+                        </div>
+                    `;
+                    
+                    // 添加到容器
+                    container.appendChild(card);
+                    
+                    // 为卡片添加点击事件
+                    card.addEventListener('click', function() {
+                        const currentRotate = rotateAngle;
+                        this.style.transform = `translate(-50%, -50%) scale(1.15) rotate(${currentRotate + 3}deg)`;
+                        setTimeout(() => {
+                            this.style.transform = `translate(-50%, -50%) scale(${isCentral ? 1.1 : 1}) rotate(${currentRotate}deg)`;
+                        }, 300);
+                    });
+                });
+                
+                // 依次显示卡片（中央卡片最后显示）
+                setTimeout(() => {
+                    const cards = document.querySelectorAll('.card');
+                    const totalCards = cards.length;
+                    let displayIndex = 0; // 用于计算显示顺序
+                    
+                    // 先显示所有其他卡片
+                    cards.forEach((card, index) => {
+                        if (index !== centerCardIndex) {
+                            const currentIndex = displayIndex++;
+                            setTimeout(() => {
+                                // 从 data 属性获取旋转角度
+                                const rotateAngle = parseFloat(card.getAttribute('data-rotate')) || 0;
+                                card.style.transform = `translate(-50%, -50%) scale(1) rotate(${rotateAngle}deg)`;
+                                card.style.opacity = '1';
+                            }, currentIndex * 150); // 每个卡片间隔150ms显示，让用户能看清楚内容
+                        }
+                    });
+                    
+                    // 最后显示中央卡片（在所有其他卡片显示完之后）
+                    const centralCard = cards[centerCardIndex];
+                    const lastCardDelay = displayIndex * 150 + 300; // 中央卡片显示的时间，间隔更长让用户看清楚
+                    
+                    if (centralCard) {
+                        setTimeout(() => {
+                            centralCard.style.transform = `translate(-50%, -50%) scale(1) rotate(0deg)`;
+                            centralCard.style.opacity = '1';
+                        }, lastCardDelay);
+                    }
+                    
+                    // 等待所有卡片显示完成后（包括中央卡片），再等待2秒后开始发牌效果
+                    setTimeout(() => {
+                        scatterCards();
+                    }, lastCardDelay + 2000); // 中央卡片显示后等待2秒
+                }, 200); // 减少初始延迟
+            }
+            
+            // 发牌效果：卡片向四周散开，铺满整个页面
+            function scatterCards() {
+                const cards = document.querySelectorAll('.card');
+                const windowWidth = window.innerWidth;
+                const windowHeight = window.innerHeight;
+                
+                // 根据屏幕大小调整卡片尺寸（卡片更小）
+                const isMobile = window.innerWidth <= 768;
+                const cardWidth = isMobile ? 100 : 120;
+                const cardHeight = isMobile ? 70 : 80;
+                const padding = isMobile ? 10 : 15; // 手机端使用更小的边距
+                
+                // 计算可以放置卡片的区域
+                const minX = cardWidth / 2 + padding;
+                const maxX = windowWidth - cardWidth / 2 - padding;
+                const minY = cardHeight / 2 + padding;
+                const maxY = windowHeight - cardHeight / 2 - padding;
+                
+                cards.forEach((card, index) => {
+                    // 生成随机位置，确保卡片完全在页面内
+                    const randomX = Math.random() * (maxX - minX) + minX;
+                    const randomY = Math.random() * (maxY - minY) + minY;
+                    
+                    // 生成随机旋转角度（-45到45度，更像发牌效果）
+                    const randomRotate = (Math.random() - 0.5) * 90;
+                    
+                    // 添加过渡动画，使用更自然的缓动函数
+                    card.style.transition = 'all 1s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+                    
+                    // 延迟执行，让卡片依次散开，像发牌一样
+                    setTimeout(() => {
+                        card.style.left = `${randomX}px`;
+                        card.style.top = `${randomY}px`;
+                        card.style.transform = `translate(-50%, -50%) scale(1) rotate(${randomRotate}deg)`;
+                        card.style.zIndex = Math.floor(Math.random() * 20) + 1; // 随机z-index，增加层次感
+                    }, index * 20); // 每个卡片间隔20ms散开，更快更流畅
+                });
+            }
+            
+            // 创建庆祝效果
+            function createCelebration() {
+                const colors = ['#FF5252', '#FF4081', '#E040FB', '#7C4DFF', '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'];
+                
+                for (let i = 0; i < 100; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.className = 'confetti';
+                    confetti.style.left = `${Math.random() * 100}%`;
+                    confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                    confetti.style.animationDelay = `${Math.random() * 2}s`;
+                    confetti.style.animationDuration = `${3 + Math.random() * 2}s`;
+                    confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+                    confetti.style.opacity = '1';
+                    celebration.appendChild(confetti);
+                }
+            }
+            
+            // 打开礼物按钮点击事件
+            openGiftBtn.addEventListener('click', function() {
+                // 隐藏初始模态框
+                giftModal.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                
+                setTimeout(() => {
+                    giftModal.classList.add('hidden');
+                    // 显示爱心容器
+                    heartContainer.classList.remove('hidden');
+                    // 创建庆祝效果
+                    createCelebration();
+                    // 创建爱心卡片
+                    createHeartCards();
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>
